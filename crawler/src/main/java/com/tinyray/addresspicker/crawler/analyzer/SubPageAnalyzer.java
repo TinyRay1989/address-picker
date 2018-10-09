@@ -7,31 +7,26 @@ import org.jsoup.select.Elements;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SubPageAnalyzer extends PageAnalyzer {
-    private static Map<Integer, String> cssMap = new HashMap<>();
-    static {
-        cssMap.put(3, ".countytr");// 县
-        cssMap.put(4, ".towntr");// 镇
-        cssMap.put(5, ".villagetr");// 村
+
+    @Override
+    protected String getCss() {
+        return "tr.countytr";
     }
-    private String css = "tr.countytr";
 
     @Override
     public List<Address> analyze(URI uri) {
 
         ArrayList<Address> addressList = new ArrayList<>();
         Document subPage = connectAndGetDocument(uri.toString());
-        Elements addresses = subPage.select(css);
+        Elements addresses = subPage.select(getCss());
         for(Element addressElement: addresses){
 
             String id = null;
-            //String code = null;
             String name = null;
             String href = null;
             Element idElement = null;
@@ -44,7 +39,6 @@ public class SubPageAnalyzer extends PageAnalyzer {
                 Pattern pattern = Pattern.compile("(\\d*/)(\\d*)(.html)");
                 Matcher matcher = pattern.matcher(href);
                 matcher.find();
-                //id = matcher.group(2).substring(4);
                 id = idElement.ownText();
                 name = valueElement.ownText();
                 address.setChildURI(uri.resolve(href));
@@ -53,7 +47,6 @@ public class SubPageAnalyzer extends PageAnalyzer {
                 Elements datas = addressElement.select("td");
                 id = datas.get(0).ownText();
                 name = datas.get(1).ownText();
-               // id = code.substring(4,6);
             }
 
             address.setId(id);

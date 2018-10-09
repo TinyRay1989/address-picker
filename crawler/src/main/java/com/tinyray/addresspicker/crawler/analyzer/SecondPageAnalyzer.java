@@ -7,24 +7,31 @@ import org.jsoup.select.Elements;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SecondPageAnalyzer extends PageAnalyzer{
 
-    private String css = "tr.citytr";
-
     private SubPageAnalyzer subPageAnalyzer = new SubPageAnalyzer();
+
+    private final String beijing = "110000000000";
+    private final String tianjin = "120000000000";
+    private final String shanghai = "310000000000";
+    private final String chongqing = "500000000000";
+
+    @Override
+    protected String getCss() {
+        return "tr.citytr";
+    }
 
     @Override
     public List<Address> analyze(URI uri) {
 
         List<Address> addressList = new ArrayList<>();
         Document subPage = connectAndGetDocument(uri.toString());
-        Elements addresses = subPage.select(css);
+        Elements addresses = subPage.select(getCss());
+        int size = addresses.size();
         for(Element addressElement: addresses){
             Elements datas = addressElement.select("a");
 
@@ -34,7 +41,6 @@ public class SecondPageAnalyzer extends PageAnalyzer{
             Pattern pattern = Pattern.compile("(\\d*/)(\\d*)(.html)");
             Matcher matcher = pattern.matcher(href);
             matcher.find();
-            //String id = matcher.group(2).substring(2);
             String id = idElement.ownText();
             String name = valueElement.ownText();
 
@@ -43,11 +49,15 @@ public class SecondPageAnalyzer extends PageAnalyzer{
             address.setChildURI(uri.resolve(href));
             address.setId(id);
             address.setName(name);
-            addressList.add(address);
 
             URI childURI = address.getChildURI();
             List<Address> subAddressList = subPageAnalyzer.analyze(childURI);
-            address.setChild(subAddressList);
+            if (size <= 2) {//直辖市
+                addressList.addAll(subAddressList);
+            }else{
+                addressList.add(address);
+                address.setChild(subAddressList);
+            }
         }
         return addressList;
     }

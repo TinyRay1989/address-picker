@@ -1,2 +1,3 @@
 rootProject.name = 'address-picker'
+include 'crawler', 'rest-api'
 

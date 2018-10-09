@@ -9,16 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FirstPageAnalyzer extends PageAnalyzer {
-    private String css = "provincetr";
 
-    private SecondPageAnalyzer subPageAnalyzer = new SecondPageAnalyzer();
+    private SecondPageAnalyzer secondPageAnalyzer = new SecondPageAnalyzer();
+
+    @Override
+    protected String getCss() {
+        return "tr.provincetr";
+    }
+
     @Override
     public List<Address> analyze(URI uri){
 
         List<Address> addressList = new ArrayList<>();
 
         Document firstPage = connectAndGetDocument(uri.toString());
-        Elements provinceTrs = firstPage.select("tr." + getCss());
+        Elements provinceTrs = firstPage.select(getCss());
         for(Element e : provinceTrs){
             Elements elements = e.select("a");
             for(Element province : elements){
@@ -35,7 +40,7 @@ public class FirstPageAnalyzer extends PageAnalyzer {
                 URI childURI = address.getChildURI();
 
                 System.out.println(">>>>正在爬取" + name + ">的数据…………");
-                List<Address> subAddressList = subPageAnalyzer.analyze(childURI);
+                List<Address> subAddressList = secondPageAnalyzer.analyze(childURI);
                 address.setChild(subAddressList);
 
             }

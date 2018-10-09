@@ -11,16 +11,7 @@ import java.util.List;
 
 public abstract class PageAnalyzer {
 
-    private String css = "provincetr";
-
-    public String getCss() {
-        return css;
-    }
-
-    public void setCss(String css) {
-        this.css = css;
-    }
-
+    protected abstract String getCss();
     protected Document connectAndGetDocument(String urlStr) {
         if(urlStr == null || urlStr.isEmpty()){
             throw new IllegalArgumentException("the input url : " + urlStr + " is invalid");
