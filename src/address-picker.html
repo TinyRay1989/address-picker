@@ -17,7 +17,7 @@
 </body>
 
 <script src="../../address-picker/src/js/address-picker-data.min.js"></script>
-<script src="../../address-picker/src/js/address-picker.min.js"></script>
+<script src="../../address-picker/src/js/address-picker.js"></script>
 <script>
 var addressPicker1 = new AddressPicker();
 var addressPicker2 = new AddressPicker();
@@ -32,10 +32,9 @@ document.getElementById('btn1').onclick = function() {
 
 addressPicker2.init({
     'trigger' : '#id2',
-    data : addressPickerData,
     autoSave : false,
     isAjax : true,
-    url : "http://localhost/address/{addressId}/child",
+    url : "http://localhost",
     callback : function(info){
         alert(info.getDesc());
     }

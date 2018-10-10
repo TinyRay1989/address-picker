@@ -1,15 +1,39 @@
 ;(function(window, document) {
+    if (window.NodeList && !NodeList.prototype.forEach) {
+        NodeList.prototype.forEach = function (callback, thisArg) {
+            thisArg = thisArg || window
+            for (var i = 0; i < this.length; i++) {
+                callback.call(thisArg, this[i], i, this)
+            }
+        }
+    };
+    if (window.Array && !Array.prototype.forEach) {
+        Array.prototype.forEach = Array.prototype.forEach || function (callback) {
+            var isArray = Object.prototype.toString.call(this) == '[object Array]';
+            if(isArray){
+                for(var key in this){
+                    if(key != 'forEach'){
+                        callback.call(this[key],key,this[key],this);
+                    }
+                }
+            }else{
+                throw TypeError;
+            }
+        };
+    };
     var defaults = {
         autoSave : true,
         isAjax : false,
-        url : '',
+        url : 'http://localhost',
+        firstLevelPath : '/provinces',
+        subPath : '/address/{addressId}/child',
         highlightNameArray : [],
         highlightCodeArray : ['750'],
         separator : '-',
         data : [],
         callback : function(addressInfo) {console.log('addressInfo:'); console.log(addressInfo);}
     };
-    var ajax= {
+    var ajax = {
         get: function (url, fn) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, false);
@@ -22,12 +46,12 @@
         }
     };
     var addressHelper = {
-        addressId : "", 
+        addressId : "",
         addressIndex : 0,
         addressArray : [],
         addressInfo : {},
         increment : function(inc) {
-            this.addressIndex += typeof inc === 'number' ? inc : 1; 
+            this.addressIndex += typeof inc === 'number' ? inc : 1;
         },
         getIndex : function(){
             return this.addressIndex;
@@ -51,6 +75,8 @@
             this.addressArray = opts.data;
             this.isAjax = opts.isAjax;
             this.url = opts.url;
+            this.firstLevelPath = opts.firstLevelPath;
+            this.subPath = opts.subPath;
         },
         pushInfo : function(id, value){
             var index = this.getIndex();
@@ -71,7 +97,7 @@
             //ajax
             var childAddressArray;
             if(this.isAjax && addressId){
-                var url = this.url.replace("{addressId}", addressId);
+                var url = (this.url + this.subPath).replace("{addressId}", addressId);
                 ajax.get(url, function(result) {
                     childAddressArray = eval(result);
                 });
@@ -81,7 +107,7 @@
             var ids = this.addressInfo.ids;
             this.addressArray.forEach(function(address) {
                 if(ids[0] == address.id){
-                    childAddressArray = address.child; 
+                    childAddressArray = address.child;
                 }
             });
             for(var i = 1; i < ids.length; i++){
@@ -120,7 +146,7 @@
             this.operatingArea.style.left = this.trigger.offsetLeft + 'px';
             this.operatingArea.style.position = 'absolute';
             this.operatingArea.style.zIndex = '9999';
-        }; 
+        };
         this.bindEvent = function() {
             var _self = this;
             _self.trigger.addEventListener('click', function() {document.body.appendChild(_self.operatingArea);});
@@ -143,15 +169,15 @@
                     this.classList.add('curr');
                     tabContents[currIndex].classList.remove('hidden');
                     tabItems.forEach(function(e){
-                        if(e.dataset.index > currIndex) e.remove();
+                        if(e.dataset.index > currIndex) e.remove ? e.remove() : e.removeNode(true);
                     });
                     tabContents.forEach(function(e){
-                        if(e.dataset.area > currIndex) e.remove();
+                        if(e.dataset.area > currIndex) e.remove ? e.remove() : e.removeNode(true);
                     });
                     _self.addressHelper.cutInfo(currIndex);
                     _self.valueTo.value = _self.addressInfo.getDesc();
                     tabItem.querySelector('em').innerHTML = '请选择';
-                }); 
+                });
                return tabItem;
             };
             var createTabContent = function(tabItem, addressArray) {
@@ -161,7 +187,7 @@
                 tabContent.dataset.widget = 'tab-content';
                 addressArray.forEach(function(e){
                     optionStr = optionStr + '<li><a href="#none" data-id=' + e.id + ' data-value=' + e.name+ '>' + e.name + '</a></li>';
-                }); 
+                });
                 tabContent.innerHTML = optionStr;
                 options = tabContent.querySelectorAll('a');
                 options.forEach(function(option) {
@@ -192,7 +218,15 @@
                 return tabContent;
             };
             tabItem = createTabItem();
-            tabContent = createTabContent(tabItem, _self.addressHelper.addressArray);
+            var firstLevelAddressArray;
+            if(this.opts.isAjax){
+                ajax.get(this.opts.url + this.opts.firstLevelPath, function(result) {
+                     firstLevelAddressArray = eval(result);
+                });
+            }else{
+                firstLevelAddressArray = _self.addressHelper.addressArray;
+            }
+            tabContent = createTabContent(tabItem, firstLevelAddressArray);
             tabItemsContainer.appendChild(tabItem);
             tabContentsContainer.appendChild(tabContent);
             close.addEventListener('click', function(e) { _self.close(e);});
