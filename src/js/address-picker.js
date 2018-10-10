@@ -85,6 +85,9 @@
             this.increment();
             this.addressId = id;
         },
+        popInfo : function(){
+            this.cutInfo(this.getIndex() - 1);
+        },
         cutInfo : function(index) {
             var ids = this.addressInfo.ids;
             var values = this.addressInfo.values;
@@ -94,8 +97,8 @@
             this.addressIndex = index;
         },
         findChildAddressArray : function(addressId) {
-            //ajax
             var childAddressArray;
+            //ajax----------------------------
             if(this.isAjax && addressId){
                 var url = (this.url + this.subPath).replace("{addressId}", addressId);
                 ajax.get(url, function(result) {
@@ -103,7 +106,7 @@
                 });
                 return childAddressArray;
             }
-            //all data
+            //all data------------------------
             var ids = this.addressInfo.ids;
             this.addressArray.forEach(function(address) {
                 if(ids[0] == address.id){
@@ -122,6 +125,7 @@
         }
     };
     var AddressPicker = function() {
+        this.finished = false;
         this.operatingArea = function(){
             var operatingArea;
             var operatingAreaHTML =
@@ -164,6 +168,7 @@
                 tabItem.dataset.widget = 'tab-item';
                 tabItem.innerHTML = '<a href="#none"><em>请选择</em><i></i></a>';
                 tabItem.addEventListener('click', function(){
+                    _self.finished = false;
                     var tabItems = tabItemsContainer.querySelectorAll('li');
                     var tabContents = tabContentsContainer.querySelectorAll('ul');
                     this.classList.add('curr');
@@ -194,7 +199,9 @@
                     option.addEventListener('click', function() {
                         var id = this.dataset.id;
                         var value = this.dataset.value;
-
+                        if(_self.finished){
+                            _self.addressHelper.popInfo();
+                        }
                         tabItem.classList.remove('curr')
                         tabContent.classList.add('hidden');
                         tabItem.querySelector('em').innerHTML = value;
@@ -202,13 +209,17 @@
                         _self.valueTo.value = _self.addressInfo.getDesc();
                         var childAddressArray = _self.addressHelper.findChildAddressArray(id)
                         if(!childAddressArray) {
+                            _self.finished = true;
                             if(_self.opts.autoSave){
                                 _self.save();
                             }else{
                                 _self.close();
                             }
+                            tabItem.classList.add('curr')
+                            tabContent.classList.remove('hidden');
                             return;
                         }
+
                         var newTabItem = createTabItem();
                         var newTabContent = createTabContent(newTabItem, childAddressArray);
                         tabItemsContainer.appendChild(newTabItem);
