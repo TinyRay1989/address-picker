@@ -6,7 +6,7 @@
                 callback.call(thisArg, this[i], i, this)
             }
         }
-    };
+    }
     if (window.Array && !Array.prototype.forEach) {
         Array.prototype.forEach = Array.prototype.forEach || function (callback) {
             var isArray = Object.prototype.toString.call(this) == '[object Array]';
@@ -19,8 +19,8 @@
             }else{
                 throw TypeError;
             }
-        };
-    };
+        }
+    }
     var defaults = {
         autoSave : true,
         isAjax : false,
@@ -32,7 +32,7 @@
         separator : '-',
         data : [],
         callback : function(addressInfo) {console.log('addressInfo:'); console.log(addressInfo);}
-    };
+    }
     var ajax = {
         get: function (url, fn) {
             var xhr = new XMLHttpRequest();
@@ -44,7 +44,7 @@
             };
             xhr.send();
         }
-    };
+    }
     var addressHelper = {
         addressId : "",
         addressIndex : 0,
@@ -123,7 +123,7 @@
             }
             return childAddressArray;
         }
-    };
+    }
     var AddressPicker = function() {
         this.finished = false;
         this.operatingArea = function(){
@@ -150,11 +150,11 @@
             this.operatingArea.style.left = this.trigger.offsetLeft + 'px';
             this.operatingArea.style.position = 'absolute';
             this.operatingArea.style.zIndex = '9999';
-        };
+        }
         this.bindEvent = function() {
             var _self = this;
             _self.trigger.addEventListener('click', function() {document.body.appendChild(_self.operatingArea);});
-        };
+        }
         this.initOperatingArea = function() {
             var _self = this, tabItem, tabContent,
                 close = _self.operatingArea.querySelector('#address_selector_close'),
@@ -184,7 +184,7 @@
                     tabItem.querySelector('em').innerHTML = '请选择';
                 });
                return tabItem;
-            };
+            }
             var createTabContent = function(tabItem, addressArray) {
                 var currIndex = _self.getIndex(), tabContent = document.createElement('ul'), options, optionStr = '';
                 tabContent.classList.add('area-list');
@@ -227,7 +227,7 @@
                     });
                 });
                 return tabContent;
-            };
+            }
             tabItem = createTabItem();
             var firstLevelAddressArray;
             if(this.opts.isAjax){
@@ -242,8 +242,8 @@
             tabContentsContainer.appendChild(tabContent);
             close.addEventListener('click', function(e) { _self.close(e);});
 
-        };
-    };
+        }
+    }
     AddressPicker.prototype = {
         init : function(opts) {
             this.opts = extend(Object.create(defaults), opts);
@@ -263,7 +263,7 @@
                     }
                 }
                 return target;
-            };
+            }
         },
         getIndex : function(){
             return this.addressHelper.getIndex();
@@ -277,6 +277,6 @@
                 document.body.removeChild(this.operatingArea);
             }
         }
-    };
+    }
     window.AddressPicker = AddressPicker;
 })(window, document);
